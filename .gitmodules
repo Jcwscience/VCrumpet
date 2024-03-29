@@ -1,0 +1,3 @@
+[submodule "xtts_live"]
+	path = xtts_live
+	url = https://github.com/Jcwscience/xtts_live.git
