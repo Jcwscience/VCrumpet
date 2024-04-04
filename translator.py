@@ -6,26 +6,29 @@ model_list = {
 
 class Translator:
     def __init__(self):
-        self.translator = None
-        self.target_language = None
+        self.translation_pipeline = None
         self.model_language = None
         self.model_name = None
         
-
-    def load_model(self):
-        if self.target_language:
-            self.translator = pipeline("translation", model=model_list[self.target_language], device=0)
+    def load_model(self, language=None):
+        if language in model_list:
+            if self.model_language == language and self.translation_pipeline:
+                return f'Model already loaded: "{self.model_name}"'
+            print(f"Loading model: {model_list[language]}")
+            self.translation_pipeline = pipeline("translation", model=model_list[self.target_language], device=0)
             self.model_language = self.target_language
             self.model_name = model_list[self.target_language]
+            return "Model loaded."
         else:
-            self.translator = None
-            self.model_language = None
-            self.model_name = None
+            print(f'No model available for language code "{self.target_language}"')
 
+    def clear_model(self):
+        self.translation_pipeline = None
+        self.model_language = None
+        self.model_name = None
+        
     def translate(self, text):
-        if self.target_language != self.model_language:
-            self.load_model()
-        if self.target_language:
-            return self.translator(text)[0]['translation_text']
+        if self.translation_pipeline:
+            return self.translation_pipeline(text)[0]['translation_text']
         else:
-            return text
+            return "No translation model loaded."
