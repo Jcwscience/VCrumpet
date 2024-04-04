@@ -32,43 +32,44 @@ stream.start()  # Start the audio streaming
 translator = Translator()  # Assuming English to Japanese translation as default
 
 language_codes = {
-    #"Spanish": "es",
-    #"French": "fr",
-    #"German": "de",
-    #"Italian": "it",
-    #"Portuguese": "pt",
-    #"Polish": "pl",
-    #"Turkish": "tr",
-    #"Russian": "ru",
-    #"Dutch": "nl",
-    #"Czech": "cs",
-    #"Arabic": "ar",
-    #"Chinese": "zh",
-    "Japanese": "ja",
-    #"Hungarian": "hu",
-    #"Korean": "ko",
-    #"Hindi": "hi"
+    #"spanish": "es",
+    #"french": "fr",
+    #"german": "de",
+    #"italian": "it",
+    #"portuguese": "pt",
+    #"polish": "pl",
+    #"turkish": "tr",
+    #"russian": "ru",
+    #"dutch": "nl",
+    #"czech": "cs",
+    #"arabic": "ar",
+    #"chinese": "zh",
+    "japanese": "ja",
+    #"hungarian": "hu",
+    #"korean": "ko",
+    #"hindi": "hi"
 }
 
-print(f"Available languages: {', '.join(language_codes.keys())}")
-target_language = input("Enter target language or leave empty for passthrough: ")
-
+passthrough = True
 while True:
     try:
         text = input("Enter text to translate: ")
-        if text.lower() in language_codes.keys().lower() or text in language_codes.items() or text == "passthrough":
-            lang = text.lower()
-            if lang == "Passthrough":
-                print("Passthrough mode enabled.")
-            elif lang in language_codes.keys().lower():
-                target_language = language_codes[lang]
-                translator.load_model(target_language)
-            else:
-                translator.load_model(lang)
-            
-                
+
+        if text == "passthrough":
+            print("Passthrough mode enabled.")
+            passthrough = True
+        elif text.lower in language_codes.keys():
+            translator.load_model(language_codes[text.lower()])
+            passthrough = False
+        elif text.lower in language_codes.values():
+            translator.load_model(text.lower())
+            passthrough = False
         else:
-            tts.speak(translator.translate(text))
+            if passthrough:
+                tts.speak(text)
+            else:
+                tts.speak(translator.translate(text))
+                
     except KeyboardInterrupt:
         tts.stop()
         stream.stop()

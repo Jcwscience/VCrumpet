@@ -1,8 +1,4 @@
-from transformers import pipeline
-
-model_list = {
-    "ja": "Helsinki-NLP/opus-tatoeba-en-ja"
-}
+from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
 
 class Translator:
     def __init__(self):
@@ -15,7 +11,7 @@ class Translator:
             if self.model_language == language and self.translation_pipeline:
                 return f'Model already loaded: "{self.model_name}"'
             print(f"Loading model: {model_list[language]}")
-            self.translation_pipeline = pipeline("translation", model=model_list[self.target_language], device=0)
+            self.translation_pipeline = pipeline("translation", model=model_list[language], device=0)
             self.model_language = self.target_language
             self.model_name = model_list[self.target_language]
             return "Model loaded."
