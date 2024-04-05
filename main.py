@@ -3,6 +3,7 @@ from xtts_live.xtts_live import TextToSpeech
 import sounddevice as sd  # Import the sounddevice module for audio streaming
 
 
+
 model_path = "/home/john/Documents/XTTS-v2/"  # Path to the model directory
 speaker_wavs = "/home/john/Documents/Voices/voice.wav"  # Path to the speaker's audio file
 
@@ -31,45 +32,18 @@ stream.start()  # Start the audio streaming
 # Initialize the Translator and TextToSpeechSystem
 translator = Translator()  # Assuming English to Japanese translation as default
 
-language_codes = {
-    #"spanish": "es",
-    #"french": "fr",
-    #"german": "de",
-    #"italian": "it",
-    #"portuguese": "pt",
-    #"polish": "pl",
-    #"turkish": "tr",
-    #"russian": "ru",
-    #"dutch": "nl",
-    #"czech": "cs",
-    #"arabic": "ar",
-    #"chinese": "zh",
-    "japanese": "ja",
-    #"hungarian": "hu",
-    #"korean": "ko",
-    #"hindi": "hi"
-}
+supported_languages = tts.supported_languages
 
-passthrough = True
 while True:
     try:
         text = input("Enter text to translate: ")
-
-        if text == "passthrough":
-            print("Passthrough mode enabled.")
-            passthrough = True
-        elif text.lower in language_codes.keys():
-            translator.load_model(language_codes[text.lower()])
-            passthrough = False
-        elif text.lower in language_codes.values():
-            translator.load_model(text.lower())
-            passthrough = False
+        target_lang = input("Enter target language: ")
+        if target_lang in supported_languages:
+            print(translator.translate(text, target_lang))
+            tts.speak(translator.translate(text, target_lang), target_lang)
         else:
-            if passthrough:
-                tts.speak(text)
-            else:
-                tts.speak(translator.translate(text))
-                
+            print(f"Language {target_lang} not supported.")
+
     except KeyboardInterrupt:
         tts.stop()
         stream.stop()

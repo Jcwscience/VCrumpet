@@ -1,30 +1,35 @@
 from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
+from xtts_live.xtts_live import Helpers
+import langid
 
+
+lcc = Helpers().language_code_conversion
 class Translator:
     def __init__(self):
-        self.translation_pipeline = None
-        self.model_language = None
-        self.model_name = None
-        
-    def load_model(self, language=None):
-        if language in model_list:
-            if self.model_language == language and self.translation_pipeline:
-                return f'Model already loaded: "{self.model_name}"'
-            print(f"Loading model: {model_list[language]}")
-            self.translation_pipeline = pipeline("translation", model=model_list[language], device=0)
-            self.model_language = self.target_language
-            self.model_name = model_list[self.target_language]
-            return "Model loaded."
-        else:
-            print(f'No model available for language code "{self.target_language}"')
+        langid.set_languages(Helpers().supported_languages)
+        model = MBartForConditionalGeneration.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
+        self.tokenizer = MBart50TokenizerFast.from_pretrained("facebook/mbart-large-50-many-to-many-mmt")
+        self.model = model.cuda()
 
-    def clear_model(self):
-        self.translation_pipeline = None
-        self.model_language = None
-        self.model_name = None
+    def translate(self, text, target_lang, source_lang=None):
+        if not source_lang:
+            source_lang = langid.classify(text)[0]
         
-    def translate(self, text):
-        if self.translation_pipeline:
-            return self.translation_pipeline(text)[0]['translation_text']
-        else:
-            return "No translation model loaded."
+        self.tokenizer.src_lang = lcc[source_lang]
+        encoded_text = self.tokenizer(text, return_tensors="pt").to("cuda")
+        generated_tokens = self.model.generate(
+            **encoded_text,
+            forced_bos_token_id=self.tokenizer.lang_code_to_id[lcc[target_lang]]
+        )
+        output_text = self.tokenizer.batch_decode(generated_tokens.cpu(), skip_special_tokens=True)[0]
+        return output_text
+
+def main():
+    translator = Translator()
+    while True:
+        text = input("Enter text to translate: ")
+        target_lang = input("Enter target language: ")
+        print(translator.translate(text, target_lang))
+
+if __name__ == "__main__":
+    main()
